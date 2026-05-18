@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Модерация внешних заказов — WorkScout{% endblock %}
+{% block content %}
+<h3 class="mb-2"><i class="bi bi-globe me-2"></i>Внешние заказы (краулер)</h3>
+<p class="text-muted mb-4">Заказы собраны краулером. Одобрите чтобы они появились в общем поиске.</p>
+
+{# Счётчики по статусам #}
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card bg-warning bg-opacity-10">
+            <div class="number text-warning">{{ orders|selectattr('status.value', 'equalto', 'new')|list|length }}</div>
+            <div class="label">Новых</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card bg-success bg-opacity-10">
+            <div class="number text-success">{{ orders|selectattr('status.value', 'equalto', 'active')|list|length }}</div>
+            <div class="label">Активных</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card bg-secondary bg-opacity-10">
+            <div class="number text-secondary">{{ orders|selectattr('status.value', 'equalto', 'archived')|list|length }}</div>
+            <div class="label">Архивных</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <a href="/crawler" class="btn btn-primary w-100 h-100 d-flex align-items-center justify-content-center">
+            <i class="bi bi-robot me-2"></i>Запустить краулер
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+    {% for order in orders %}
+    <div class="col-md-6">
+        <div class="card job-card h-100 {% if order.status.value == 'new' %}border-warning border-2{% endif %}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="card-title">{{ order.title[:100] }}</h6>
+                    <span class="badge 
+                        {% if order.status.value == 'new' %}bg-warning text-dark
+                        {% elif order.status.value == 'active' %}bg-success
+                        {% elif order.status.value == 'archived' %}bg-secondary
+                        {% else %}bg-danger{% endif %}">
+                        {% if order.status.value == 'new' %}Новый
+                        {% elif order.status.value == 'active' %}Активный
+                        {% elif order.status.value == 'archived' %}Архив
+                        {% elif order.status.value == 'error' %}Ошибка
+                        {% else %}{{ order.status.value }}{% endif %}
+                    </span>
+                </div>
+                <p class="card-text text-muted small">{{ order.description[:150] }}</p>
+                <div class="mb-2">
+                    <span class="badge bg-light text-dark me-1">{{ order.source_name }}</span>
+                    <span class="badge bg-light text-dark">{{ order.category or 'Без категории' }}</span>
+                </div>
+                <small class="text-muted d-block mb-2">{{ order.discovered_at.strftime('%d.%m.%Y %H:%M') if order.discovered_at else '' }}</small>
+                
+                <div class="d-flex gap-2">
+                    {% if order.status.value == 'new' %}
+                    <a href="/external-orders/{{ order.id }}/approve" class="btn btn-success btn-sm">
+                        <i class="bi bi-check-lg me-1"></i>Одобрить
+                    </a>
+                    {% endif %}
+                    {% if order.status.value != 'archived' %}
+                    <a href="/external-orders/{{ order.id }}/archive" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-archive me-1"></i>В архив
+                    </a>
+                    {% endif %}
+                    <a href="{{ order.source_url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>Источник
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5 text-muted">
+                <i class="bi bi-inbox" style="font-size:3rem;"></i>
+                <p class="mt-2">Внешних заказов пока нет</p>
+                <a href="/crawler" class="btn btn-primary mt-2">Запустить краулер</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

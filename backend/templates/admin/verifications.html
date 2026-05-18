@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Заявки на верификацию — WorkScout{% endblock %}
+{% block content %}
+<h3 class="mb-4"><i class="bi bi-building-check me-2"></i>Заявки на статус заказчика</h3>
+
+{% if not verifications %}
+<div class="card">
+    <div class="card-body text-center py-5 text-muted">
+        <i class="bi bi-check-circle" style="font-size:3rem;"></i>
+        <p class="mt-2">Нет заявок на рассмотрении</p>
+    </div>
+</div>
+{% endif %}
+
+{% for v in verifications %}
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <h5>{{ v.company_name }}</h5>
+                <p class="text-muted small mb-2">От: {{ v.user_email }}</p>
+                <p><strong>Описание:</strong> {{ v.description }}</p>
+                <p><strong>Почему доверять:</strong> {{ v.reason }}</p>
+                <div class="mb-2">
+                    {% if v.contact_phone %}<span class="badge bg-light text-dark me-2"><i class="bi bi-telephone me-1"></i>{{ v.contact_phone }}</span>{% endif %}
+                    {% if v.contact_telegram %}<span class="badge bg-light text-dark"><i class="bi bi-telegram me-1"></i>{{ v.contact_telegram }}</span>{% endif %}
+                </div>
+                <span class="badge bg-warning text-dark">На рассмотрении</span>
+                <small class="text-muted ms-2">{{ v.created_at.strftime('%d.%m.%Y %H:%M') }}</small>
+            </div>
+            <div class="col-md-4 d-flex align-items-center justify-content-end gap-2">
+                <a href="/admin/verifications/{{ v.id }}/approve" class="btn btn-success">
+                    <i class="bi bi-check-lg me-1"></i>Одобрить
+                </a>
+                <button class="btn btn-danger" onclick="rejectVerification({{ v.id }})">
+                    <i class="bi bi-x-lg me-1"></i>Отклонить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+function rejectVerification(id) {
+    const comment = prompt('Причина отказа:');
+    if (comment) {
+        window.location.href = '/admin/verifications/' + id + '/reject?comment=' + encodeURIComponent(comment);
+    }
+}
+</script>
+{% endblock %}

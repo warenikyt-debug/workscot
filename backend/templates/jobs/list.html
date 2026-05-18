@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}
+{% if my_orders %}Мои заказы{% else %}Все заказы{% endif %} — WorkScout
+{% endblock %}
+{% block content %}
+<h3 class="mb-4">
+    <i class="bi bi-briefcase me-2"></i>
+    {% if my_orders %}Мои заказы{% else %}Все доступные заказы{% endif %}
+</h3>
+
+{% if not my_orders %}
+<div class="card mb-4">
+    <div class="card-body">
+        <form action="/jobs" method="GET" class="row g-2">
+            <div class="col-md-4">
+                <input type="text" name="keywords" class="form-control" placeholder="Ключевые слова (необязательно)" value="{{ keywords }}">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="category" class="form-control" placeholder="Категория (необязательно)" value="{{ category }}">
+            </div>
+            <div class="col-md-2">
+                <input type="number" name="budget_from" class="form-control" placeholder="Бюджет от" value="{{ budget_from }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i>Фильтровать</button>
+            </div>
+            <div class="col-md-1">
+                <a href="/jobs" class="btn btn-outline-secondary w-100" title="Сбросить фильтры">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{% if external_orders %}
+<h5 class="mb-3"><i class="bi bi-globe me-2 text-warning"></i>Внешние заказы от краулера <span class="badge bg-warning ms-2">{{ external_orders|length }}</span></h5>
+{% endif %}
+
+{% if orders %}
+<h5 class="mb-3"><i class="bi bi-building me-2 text-primary"></i>Заказы на платформе <span class="badge bg-primary ms-2">{{ orders|length }}</span></h5>
+{% endif %}
+
+<div class="row g-3">
+    {% for order in orders %}
+    <div class="col-md-6">
+        <div class="card job-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title">{{ order.title }}</h5>
+                    <span class="badge 
+                        {% if order.status.value == 'published' %}bg-success
+                        {% elif order.status.value == 'in_progress' %}bg-primary
+                        {% elif order.status.value == 'on_moderation' %}bg-warning
+                        {% elif order.status.value == 'draft' %}bg-secondary
+                        {% elif order.status.value == 'rejected' %}bg-danger
+                        {% else %}bg-secondary{% endif %}">
+                        {% if order.status.value == 'published' %}Опубликован
+                        {% elif order.status.value == 'in_progress' %}В работе
+                        {% elif order.status.value == 'on_moderation' %}На модерации
+                        {% elif order.status.value == 'draft' %}Черновик
+                        {% elif order.status.value == 'rejected' %}Отклонён
+                        {% elif order.status.value == 'completed' %}Завершён
+                        {% else %}{{ order.status.value }}{% endif %}
+                    </span>
+                </div>
+                <p class="card-text text-muted small">{{ order.description[:200] }}...</p>
+                
+                <div class="d-flex gap-2 mb-3">
+                    <span class="badge bg-light text-dark">{{ order.category }}</span>
+                    {% if order.budget_min and order.budget_max %}
+                    <span class="badge bg-light text-dark">{{ order.budget_min|int }} - {{ order.budget_max|int }} ₽</span>
+                    {% endif %}
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">{{ order.created_at.strftime('%d.%m.%Y') if order.created_at else '' }}</small>
+                    
+                    {% if order.status.value == 'published' and user.role == 'freelancer' %}
+                    <a href="/jobs/{{ order.id }}/bid" class="btn btn-primary btn-sm">Откликнуться</a>
+                    {% endif %}
+                    
+                    {% if order.status.value == 'draft' and user.role == 'customer' %}
+                    <form action="/orders/{{ order.id }}/submit" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-warning btn-sm">На модерацию</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+    {% for ext in external_orders %}
+    <div class="col-md-6">
+        <div class="card job-card h-100 border-warning border-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title">{{ ext.title[:120] }}</h5>
+                    <span class="badge bg-warning text-dark">Внешний</span>
+                </div>
+                <p class="card-text text-muted small">{{ ext.description[:200] }}</p>
+                
+                <div class="d-flex gap-2 mb-3">
+                    <span class="badge bg-light text-dark">{{ ext.source_name }}</span>
+                    <span class="badge bg-light text-dark">{{ ext.category or 'Без категории' }}</span>
+                    {% if ext.budget and ext.budget != 'Не указан' %}
+                    <span class="badge bg-light text-dark">{{ ext.budget }}</span>
+                    {% endif %}
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">{{ ext.discovered_at.strftime('%d.%m.%Y') if ext.discovered_at else '' }}</small>
+                    <a href="{{ ext.source_url }}" target="_blank" class="btn btn-sm btn-outline-warning">Перейти →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+    {% if not orders and not external_orders %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5 text-muted">
+                <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                <p class="mt-2">Заказов пока нет</p>
+                <a href="/jobs" class="btn btn-outline-primary mt-2">Показать все</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

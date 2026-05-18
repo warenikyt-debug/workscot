@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Дашборд — WorkScout{% endblock %}
+{% block content %}
+<h3 class="mb-2"><i class="bi bi-speedometer2 me-2"></i>Дашборд</h3>
+<p class="text-muted mb-4">Добро пожаловать, {{ user.email }}</p>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6><i class="bi bi-person-badge me-2"></i>Ваш статус</h6>
+                <p class="mb-2">
+                    <span class="badge bg-success me-2">Фрилансер</span>
+                    {% if user.is_customer %}
+                    <span class="badge bg-primary">Заказчик</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Не заказчик</span>
+                    {% endif %}
+                </p>
+                {% if user.is_customer %}
+                <a href="/create-order" class="btn btn-success btn-sm mt-2">
+                    <i class="bi bi-plus-circle me-1"></i>Создать заказ
+                </a>
+                {% else %}
+                <a href="/become-customer" class="btn btn-primary btn-sm mt-2">
+                    <i class="bi bi-building-check me-1"></i>Стать заказчиком
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stats-card bg-primary bg-opacity-10">
+            <div class="number text-primary">{{ stats.published }}</div>
+            <div class="label">Опубликовано</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stats-card bg-success bg-opacity-10">
+            <div class="number text-success">{{ stats.in_progress }}</div>
+            <div class="label">В работе</div>
+        </div>
+    </div>
+</div>
+
+{% if popular_categories %}
+<div class="card">
+    <div class="card-header"><i class="bi bi-star me-2"></i>Популярные категории</div>
+    <div class="card-body">
+        <div class="row">
+            {% for cat in popular_categories %}
+            <div class="col-md-3 mb-2">
+                <span class="badge bg-light text-dark me-2">{{ cat.category }}</span>
+                <span class="badge bg-primary">{{ cat.count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

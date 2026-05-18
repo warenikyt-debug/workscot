@@ -1,0 +1,52 @@
+<div class="sidebar mt-4">
+    <nav class="nav flex-column">
+        <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="/dashboard">
+            <i class="bi bi-speedometer2 me-2"></i>Дашборд
+        </a>
+        <a class="nav-link {% if active_page == 'jobs' %}active{% endif %}" href="/jobs">
+            <i class="bi bi-briefcase me-2"></i>
+            {% if user.is_customer and user.is_freelancer %}Заказы и поиск
+            {% elif user.is_customer %}Мои заказы
+            {% else %}Поиск заказов{% endif %}
+        </a>
+        
+        {% if user.is_customer %}
+        <a class="nav-link {% if active_page == 'create_order' %}active{% endif %}" href="/create-order">
+            <i class="bi bi-plus-circle me-2"></i>Создать заказ
+        </a>
+        {% endif %}
+        
+        {% if not user.is_customer and user.role.value not in ['moderator', 'admin'] %}
+        <a class="nav-link {% if active_page == 'become_customer' %}active{% endif %}" href="/become-customer">
+            <i class="bi bi-building-check me-2"></i>Стать заказчиком
+        </a>
+        {% endif %}
+        
+        {% if user.role.value == 'moderator' or user.role.value == 'admin' %}
+        <a class="nav-link {% if active_page == 'moderation' %}active{% endif %}" href="/moderation">
+            <i class="bi bi-shield-check me-2"></i>Модерация заказов
+        </a>
+        {% endif %}
+        
+        {% if user.role.value == 'admin' %}
+        <a class="nav-link {% if active_page == 'crawler' %}active{% endif %}" href="/crawler">
+            <i class="bi bi-robot me-2"></i>Краулер
+        </a>
+        <a class="nav-link {% if active_page == 'external_orders' %}active{% endif %}" href="/external-orders">
+            <i class="bi bi-globe me-2"></i>Внешние заказы
+        </a>
+        <a class="nav-link {% if active_page == 'verifications' %}active{% endif %}" href="/admin/verifications">
+            <i class="bi bi-building-check me-2"></i>Заявки на верификацию
+        </a>
+        <a class="nav-link {% if active_page == 'users' %}active{% endif %}" href="/users">
+            <i class="bi bi-people me-2"></i>Пользователи
+        </a>
+        {% endif %}
+        
+        {% if user.role.value == 'moderator' or user.role.value == 'admin' %}
+        <a class="nav-link {% if active_page == 'reports' %}active{% endif %}" href="/reports">
+            <i class="bi bi-graph-up me-2"></i>Отчёты
+        </a>
+        {% endif %}
+    </nav>
+</div>

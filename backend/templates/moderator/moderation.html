@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Модерация — WorkScout{% endblock %}
+{% block content %}
+<h3 class="mb-4"><i class="bi bi-shield-check me-2"></i>Модерация заказов</h3>
+
+{% if not orders %}
+<div class="card">
+    <div class="card-body text-center py-5 text-muted">
+        <i class="bi bi-check-circle" style="font-size: 3rem;"></i>
+        <p class="mt-2">Нет заказов на модерации</p>
+    </div>
+</div>
+{% endif %}
+
+{% for order in orders %}
+<div class="card mb-3">
+    <div class="card-body">
+        <h5>{{ order.title }}</h5>
+        <p class="text-muted">{{ order.description[:300] }}...</p>
+        <div class="mb-3">
+            <span class="badge bg-light text-dark">{{ order.category }}</span>
+            <span class="badge bg-light text-dark">{{ order.budget_min|int }} - {{ order.budget_max|int }} ₽</span>
+        </div>
+        <div class="d-flex gap-2">
+            <form action="/moderation/orders/{{ order.id }}/approve" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-lg me-1"></i>Одобрить
+                </button>
+            </form>
+            <button class="btn btn-danger" onclick="rejectOrder({{ order.id }})">
+                <i class="bi bi-x-lg me-1"></i>Отклонить
+            </button>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+function rejectOrder(id) {
+    const reason = prompt('Причина отклонения:');
+    if (reason) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/moderation/orders/${id}/reject?reason=${encodeURIComponent(reason)}`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

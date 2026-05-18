@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Отклик на заказ — WorkScout{% endblock %}
+{% block content %}
+<h3 class="mb-4"><i class="bi bi-send me-2"></i>Отклик на заказ</h3>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5>{{ order.title }}</h5>
+        <p>{{ order.description }}</p>
+        <span class="badge bg-light text-dark me-2">{{ order.category }}</span>
+        <span class="badge bg-light text-dark">{{ order.budget_min|int }} - {{ order.budget_max|int }} ₽</span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><i class="bi bi-pencil me-2"></i>Ваш отклик</div>
+    <div class="card-body">
+        <form action="/jobs/{{ order.id }}/bid" method="POST">
+            <div class="mb-3">
+                <label class="form-label">Предложенная цена (₽)</label>
+                <input type="number" name="proposed_price" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Сопроводительное сообщение</label>
+                <textarea name="message" class="form-control" rows="4" required minlength="10"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-send me-1"></i>Отправить отклик
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

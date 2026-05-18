@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Краулер — WorkScout{% endblock %}
+{% block content %}
+<h3 class="mb-4"><i class="bi bi-robot me-2"></i>Управление краулером</h3>
+
+<div class="card mb-4">
+    <div class="card-header"><i class="bi bi-plus-circle me-2"></i>Добавить источник</div>
+    <div class="card-body">
+        <form action="/crawler/sources" method="POST" class="row g-2">
+            <div class="col-md-5">
+                <input type="text" name="name" class="form-control" placeholder="Название сайта" required>
+            </div>
+            <div class="col-md-5">
+                <input type="url" name="base_url" class="form-control" placeholder="https://example.com/jobs" required>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus me-1"></i>Добавить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-list me-2"></i>Источники</div>
+            <div class="card-body">
+                {% for source in sources %}
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                    <div>
+                        <strong>{{ source.name }}</strong>
+                        <br><small class="text-muted">{{ source.base_url }}</small>
+                    </div>
+                    <div>
+                        <span class="badge bg-success me-2">active</span>
+                        <a href="/crawler/run/{{ source.id }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-play-fill"></i></a>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-4">Нет источников</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-journal me-2"></i>Логи запусков</div>
+            <div class="card-body">
+                {% for log in logs %}
+                <div class="small mb-2 p-2 border-bottom">
+                    <span class="badge {% if log.status == 'error' %}bg-danger{% else %}bg-success{% endif %} me-2">{{ log.status }}</span>
+                    найдено: {{ log.items_found }}
+                    <span class="text-muted ms-2">{{ log.created_at }}</span>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-4">Логов нет</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
